@@ -1,2 +1,9 @@
+# Environment variables
 .env
-testing
+
+# vectordb files
+vectorstore
+
+# Generated files
+*.pyc
+__pycache__
