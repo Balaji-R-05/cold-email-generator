@@ -10,22 +10,22 @@ load_dotenv()
 
             
 
-footer="""
-    <style>
-        .footer {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            background-color: transparent;
-            color: white;
-            text-align: center;
-        }
-    </style>
-    <div class="footer">
-    <p>&copy;2025 Developed by Balaji R</a></p>
-    </div>
-"""
+# footer="""
+#     <style>
+#         .footer {
+#             position: fixed;
+#             left: 0;
+#             bottom: 0;
+#             width: 100%;
+#             background-color: transparent;
+#             color: white;
+#             text-align: center;
+#         }
+#     </style>
+#     <div class="footer">
+#     <p>&copy;2025 Developed by Balaji R</a></p>
+#     </div>
+# """
 
 
 
@@ -33,7 +33,7 @@ footer="""
 def main(llm, portfolio):
     st.title("❄️ Cold Email Generator")
     st.markdown("Enter the URL of a job posting, company, or profile page to generate a personalized cold email.")
-    st.markdown(footer,unsafe_allow_html=True)
+    # st.markdown(footer,unsafe_allow_html=True)
 
     url_input = st.text_input("🌐 Enter a URL:", value="", placeholder="https://example.com/job-posting")
     submit_button = st.button("🚀 Generate Email")

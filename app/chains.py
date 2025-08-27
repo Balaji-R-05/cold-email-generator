@@ -74,12 +74,12 @@ class Chain:
         **Signature Formatting:** use this in the response
         Best regards,
 
-        Balaji R
+        [Name]
         Business Consultant
         Techspire Solutions
 
         You're not writing to "sell" — you're starting a conversation and showing how Techspire can add real value.
-        You are **Balaji R**, Business Consultant at **Techspire Solutions**.
+        Provide placeholders like [Name] for personalization.
 
         ### EMAIL (NO PREAMBLE):
         """
