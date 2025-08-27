@@ -8,8 +8,8 @@ Helps companies to contact clients in need of software developers to build softw
 <img src="./imgs/email.png" alt="Generated email>
 </div> -->
 
-<img src="./imgs/demo.png" alt="App Demo Screenshot" width="400" style="margin-right: 20px;">
-<img src="./imgs/email.png" alt="Generated Cold Email Screenshot" width="400">
+<img src="./imgs/demo.png" alt="App Demo Screenshot" height="400" width="400" style="margin-right: 20px;">
+<img src="./imgs/email.png" alt="Generated Cold Email Screenshot" width="400" height="400">
 
 ## Architecture
 <img src="./imgs/architecture.png" alt="Architecture Diagram">
