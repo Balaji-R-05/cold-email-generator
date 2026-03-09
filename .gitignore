@@ -7,3 +7,6 @@ vectorstore
 # Generated files
 *.pyc
 __pycache__
+
+# Ignore passwords
+passwords.txt
