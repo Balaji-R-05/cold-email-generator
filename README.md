@@ -1,10 +1,9 @@
 # Cold Email Generator
 
-## Description
-The **Cold Email Generator** is an AI-powered Streamlit web application designed to help software development companies, agencies, and freelancers automate their outreach. By providing the URL of a job posting, the tool analyzes the webpage to extract key requirements such as the job role, required skills, and experience level. It then uses a vector database to search the user's portfolio for relevant projects and links that match the job's required skills. Finally, it leverages large language models (LLMs) via Langchain and Groq Cloud to instantly generate a highly personalized, context-aware cold email tailored specifically to that job posting.
+The **Cold Email Generator** is an AI-powered Streamlit app that automates outreach for developers, agencies, and freelancers. By providing a job posting URL, it extracts key requirements, matches them with relevant projects from the user’s portfolio using a vector database, and generates a personalized cold email using LLMs via LangChain and Groq Cloud.
 
-<img src="./imgs/demo.png" alt="App Demo Screenshot" height="400" width="400">
-<img src="./imgs/email.png" alt="Generated Cold Email Screenshot" width="400" height="400">
+<img src="./imgs/demo.png" alt="App Demo Screenshot">
+<img src="./imgs/email.png" alt="Generated Cold Email Screenshot">
 
 ## Use Cases
 
