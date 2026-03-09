@@ -1,136 +1,103 @@
 import streamlit as st
-
-try:
-    __import__("pysqlite3")
-    import sys
-    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
-except ImportError:
-    pass
-
 from langchain_community.document_loaders import WebBaseLoader
 from chains import Chain
 from portfolio import Portfolio
 from utils import clean_text
+import config
 
-from dotenv import load_dotenv
-load_dotenv()
+# Fix for ChromaDB in some environments (like Docker/Linux)
+try:
+    __import__('pysqlite3')
+    import sys
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    pass
 
-            
+def main():
+    st.set_page_config(
+        layout="wide",
+        page_title="Cold Email Generator",
+        page_icon="❄️"
+    )
 
-# footer="""
-#     <style>
-#         .footer {
-#             position: fixed;
-#             left: 0;
-#             bottom: 0;
-#             width: 100%;
-#             background-color: transparent;
-#             color: white;
-#             text-align: center;
-#         }
-#     </style>
-#     <div class="footer">
-#     <p>&copy;2025 Developed by Balaji R</a></p>
-#     </div>
-# """
+    # --- Sidebar Settings ---
+    st.sidebar.title("⚙️ Settings")
+    
+    with st.sidebar.expander("👤 Personalization", expanded=True):
+        sender_name = st.text_input("Your Name", value=config.DEFAULT_SENDER_NAME)
+        sender_role = st.text_input("Your Role", value=config.DEFAULT_SENDER_ROLE)
+        company_name = st.text_input("Company Name", value=config.DEFAULT_COMPANY_NAME)
+        company_description = st.text_area("Company Description", value=config.DEFAULT_COMPANY_DESCRIPTION, height=150)
 
+    with st.sidebar.expander("🔑 API & Model", expanded=False):
+        model_name = st.selectbox("LLM Model", options=["llama-3.3-70b-versatile", "llama3-70b-8192", "mixtral-8x7b-32768"], index=0)
 
+    sender_info = {
+        "name": sender_name,
+        "role": sender_role,
+        "company": company_name,
+        "description": company_description
+    }
 
-
-def main(llm, portfolio):
+    # --- Main UI ---
     st.title("❄️ Cold Email Generator")
-    st.markdown("Enter the URL of a job posting, company, or profile page to generate a personalized cold email.")
-    # st.markdown(footer,unsafe_allow_html=True)
+    st.markdown("Generate personalized, high-conversion cold emails from job postings in seconds.")
 
-    url_input = st.text_input("🌐 Enter a URL:", value="", placeholder="https://example.com/job-posting")
-    submit_button = st.button("🚀 Generate Email")
+    url_input = st.text_input("🌐 Enter Job Posting URL:", placeholder="https://careers.company.com/job/software-engineer")
+    submit_button = st.button("🚀 Generate Email", disabled=not url_input)
 
     if submit_button:
         if not url_input.strip():
             st.warning("Please enter a valid URL.")
             return
 
-        with st.spinner("Loading and analyzing content..."):
+        with st.spinner("Analyzing job posting..."):
             try:
-                # st.write("🔍 Loading content from URL...")
+                # Initialize logic
+                llm = Chain(model_name=model_name)
+                portfolio = Portfolio()
+                portfolio.load_portfolio()
+
+                # Load and clean content
                 loader = WebBaseLoader([url_input])
                 loaded_docs = loader.load()
-
                 if not loaded_docs:
-                    st.error("No content loaded from the URL. Please check the URL and try again.")
+                    st.error("No content found at the URL.")
                     return
 
-                page_content = loaded_docs.pop().page_content
-                # st.write(f"✅ Loaded content length: {len(page_content)} characters")
-
+                page_content = loaded_docs[0].page_content
                 cleaned_text = clean_text(page_content)
-                # st.write(f"✅ Cleaned content length: {len(cleaned_text)} characters")
 
-                # st.write("💼 Extracting job postings from content...")
+                # Extract jobs
                 jobs = llm.extract_jobs(cleaned_text)
-                # st.write(f"📝 Number of jobs extracted: {len(jobs)}")
-                # st.write(jobs)
 
                 if not jobs:
-                    st.info("No job information found at the provided URL.")
+                    st.info("No job postings detected on this page.")
                     return
 
+                # Process each job
                 for idx, job in enumerate(jobs, start=1):
-                    # st.write(f"🔹 Processing job #{idx}: Role = {job.get('role', 'N/A')}")
+                    role = job.get('role', 'N/A')
                     skills = job.get('skills', [])
+                    
+                    with st.expander(f"📋 Extracted Job #{idx}: {role}", expanded=(len(jobs) == 1)):
+                        st.write(f"**Experience:** {job.get('experience', 'N/A')}")
+                        st.write(f"**Skills:** {', '.join(skills) if skills else 'None detected'}")
+                        st.write("**Description:**")
+                        st.write(job.get('description', 'N/A'))
 
-                    if not isinstance(skills, list):
-                        st.warning(f"Expected 'skills' to be a list, got {type(skills)}. Skipping this job.")
-                        continue
-                    
-                    # Initialize relevant_links before the if-else block
-                    relevant_links = []
-                    
-                    if not skills:
-                        st.info(f"No skills found for job #{idx}. Continuing without portfolio links.")
-                        relevant_links = []
-                    else:
-                        # st.write(f"Skills for job #{idx}: {skills}")
-                        relevant_metadata = portfolio.query_links(skills)
-                        # st.write(f"🔗 Portfolio query returned {len(relevant_metadata)} results")
-                        # st.write(relevant_metadata)
-                        
-                        relevant_links = []
-                        seen_links = set()
-                        for group in relevant_metadata:
-                            for item in group:
-                                if isinstance(item, dict) and 'links' in item:
-                                    link = item['links']
-                                    if link not in seen_links:
-                                        relevant_links.append(link)
-                                        seen_links.add(link)
+                    # Query portfolio
+                    links = portfolio.query_links(skills) if skills else []
                     
                     # Generate email
-                    # st.write("✉️ Generating cold email...")
-                    email = llm.write_email(job, relevant_links)
+                    email = llm.write_email(job, links, sender_info=sender_info)
 
-                    st.markdown(f"### ✉️ Generated Cold Email #{idx}")
-                    
-
+                    st.markdown(f"### ✉️ Generated Cold Email for {role}")
+                    st.code(email, language="markdown", wrap_lines=True)
                     st.markdown("---")
-                    st.markdown(email)
-                    st.markdown("---")
-                    
                     
             except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
-                print(f"Error: {str(e)}")
-
+                st.error(f"Error: {str(e)}")
 
 if __name__ == "__main__":
-    st.set_page_config(
-        layout="centered",
-        page_title="Cold Email Generator",
-        page_icon="❄️"
-    )
-    chain = Chain()
-    portfolio = Portfolio()
-    # st.write("📂 Loading portfolio...")
-    portfolio.load_portfolio()
-    # st.write("✅ Portfolio loaded.")
-    main(chain, portfolio)
+    main()

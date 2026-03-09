@@ -1,26 +1,30 @@
 # Cold Email Generator
 
-## Problem Statement
-Helps companies to contact clients in need of software developers to build softwares and provide human resources.
+## Description
+The **Cold Email Generator** is an AI-powered Streamlit web application designed to help software development companies, agencies, and freelancers automate their outreach. By providing the URL of a job posting, the tool analyzes the webpage to extract key requirements such as the job role, required skills, and experience level. It then uses a vector database to search the user's portfolio for relevant projects and links that match the job's required skills. Finally, it leverages large language models (LLMs) via Langchain and Groq Cloud to instantly generate a highly personalized, context-aware cold email tailored specifically to that job posting.
 
-<!-- <div style="display:flex">
-<img src="./imgs/demo.png" alt="Demo Pic", width 400px>
-<img src="./imgs/email.png" alt="Generated email>
-</div> -->
-
-<img src="./imgs/demo.png" alt="App Demo Screenshot" height="400" width="400" style="margin-right: 20px;">
+<img src="./imgs/demo.png" alt="App Demo Screenshot" height="400" width="400">
 <img src="./imgs/email.png" alt="Generated Cold Email Screenshot" width="400" height="400">
+
+## Use Cases
+
+1. **B2B Lead Generation for Software Agencies**
+   Software development agencies can monitor companies posting job openings for roles like "React Developer" or "Python Engineer". Instead of waiting, the agency can use this tool to instantly generate a hyper-personalized email offering their agency's services or staff augmentation, complete with relevant portfolio examples.
+
+2. **Job Seekers / Freelancers**
+   Individual developers applying for jobs can use this tool to quickly draft customized cover letters or cold emails to hiring managers. The generated email will automatically highlight the applicant's past projects that specifically align with the tech stack mentioned in the job description.
+
+3. **IT Consulting Outreach**
+   Consultants can feed the application job descriptions from target companies to understand their current technical needs and automatically generate a pitch explaining how their consulting services have solved similar problems in the past (using matched portfolio case studies).
 
 ## Architecture
 <img src="./imgs/architecture.png" alt="Architecture Diagram">
 
-
-## Tech Stack
-- **Llama 3.3**
-- **Chromadb**
-- **Langchain**
-- **Streamlit**
-- **Groq Cloud**
+## Architecture & Technologies
+- **Frontend & UI:** Streamlit
+- **LLM Integration:** Langchain, Groq Cloud (Llama 3.3, Mixtral)
+- **Vector Database:** ChromaDB (for storing and querying portfolio items)
+- **Data Scraping:** WebBaseLoader (Langchain Community)
 
  ## Usage
 
@@ -60,3 +64,33 @@ Follow these steps to set up and run the project:
     streamlit run main.py
     ```
 5. **Open your browser and navigate to http://localhost:8501**
+
+## Deployment (Docker)
+
+### Building and running your application locally
+
+When you're ready, start your application by running:
+```bash
+docker compose up --build
+```
+Your application will be available at http://localhost:8501.
+
+### Deploying your application to the cloud
+
+First, build your Docker image:
+```bash
+docker build -t cold-email-generator .
+```
+
+If your cloud uses a different CPU architecture than your development machine (e.g., you are on a Mac M1 and your cloud provider is amd64), you'll want to build the image for that platform:
+```bash
+docker build --platform=linux/amd64 -t cold-email-generator .
+```
+
+Then, push it to your registry:
+```bash
+docker push myregistry.com/cold-email-generator
+```
+
+### References
+* [Docker's Python guide](https://docs.docker.com/language/python/)

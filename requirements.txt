@@ -1,8 +1,8 @@
 streamlit
 langchain
-pysqlite3-binary
 langchain_community
 langchain_core
 langchain_groq
 chromadb
-beautifulsoup4>=4.12.0
+beautifulsoup4
+ipykernel
