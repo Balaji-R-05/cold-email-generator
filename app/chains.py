@@ -2,7 +2,7 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.exceptions import OutputParserException
-import config
+from app import config
 
 class Chain:
     def __init__(self, model_name=None):
@@ -15,24 +15,29 @@ class Chain:
     def extract_jobs(self, cleaned_text):
         prompt_extract = PromptTemplate.from_template(
             """
-            ### SCRAPED TEXT From website
+            ### SCRAPED TEXT FROM WEBSITE:
             {page_data}
+
             ### INSTRUCTION:
-            Your scraped text is from career's page of a website.
-            Your job is to extract the job postings and return them in JSON format containing following keys:
-            'role', 'experience', 'description' and 'skills'.
-            Only return the valid JSON.
-            ### VALID JSON (NO PREAMBLE)
+            The text above is scraped from a careers page. 
+            Extract all job postings and return them as a list of JSON objects.
+            Each object MUST have the following keys: 'role', 'experience', 'description', and 'skills'.
+            
+            If no job postings are found, return an empty list [].
+            
+            ### VALID JSON (NO PREAMBLE):
             """
         )
 
         chain_extract = prompt_extract | self.llm
         res = chain_extract.invoke(input={'page_data': cleaned_text})
+        
         try:
             json_parser = JsonOutputParser()
             res = json_parser.parse(res.content)
         except OutputParserException:
-            raise OutputParserException("Context too big. Unable to parse jobs.")
+            raise OutputParserException("Failed to parse jobs from the provided context. The content might be too large or malformed.")
+            
         return res if isinstance(res, list) else [res]
 
     def write_email(self, job_data, links, sender_info=None):

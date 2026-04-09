@@ -1,8 +1,16 @@
 services:
   server:
+    container_name: cold-email-generator
     build:
       context: .
+      dockerfile: Dockerfile
     ports:
-      - 8501:8501
+      - "8501:8501"
     env_file:
       - .env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M

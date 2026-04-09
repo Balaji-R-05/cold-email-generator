@@ -1,9 +1,18 @@
+import sys
+import os
+from dotenv import load_dotenv
+
+# Add project root to sys.path and load environment variables before any other imports
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, project_root)
+load_dotenv(os.path.join(project_root, '.env'), override=True)
+
 import streamlit as st
 from langchain_community.document_loaders import WebBaseLoader
-from chains import Chain
-from portfolio import Portfolio
-from utils import clean_text
-import config
+from app.chains import Chain
+from app.portfolio import Portfolio
+from app.utils import clean_text
+from app import config
 
 # Fix for ChromaDB in some environments (like Docker/Linux)
 try:
@@ -30,7 +39,10 @@ def main():
         company_description = st.text_area("Company Description", value=config.DEFAULT_COMPANY_DESCRIPTION, height=150)
 
     with st.sidebar.expander("🔑 API & Model", expanded=False):
-        model_name = st.selectbox("LLM Model", options=["llama-3.3-70b-versatile", "llama3-70b-8192", "mixtral-8x7b-32768"], index=0)
+        model_name = st.selectbox("LLM Model", options=["llama-3.3-70b-versatile"], index=0)
+
+    st.sidebar.markdown("---")
+    refresh_portfolio = st.sidebar.button("🔄 Sync Portfolio CSV")
 
     sender_info = {
         "name": sender_name,
@@ -46,12 +58,17 @@ def main():
     url_input = st.text_input("🌐 Enter Job Posting URL:", placeholder="https://careers.company.com/job/software-engineer")
     submit_button = st.button("🚀 Generate Email", disabled=not url_input)
 
+    if refresh_portfolio:
+        with st.spinner("Re-syncing portfolio..."):
+            Portfolio().load_portfolio(force_rebuild=True)
+        st.sidebar.success("Portfolio synced!")
+
     if submit_button:
-        if not url_input.strip():
-            st.warning("Please enter a valid URL.")
+        if not url_input.strip() or not (url_input.startswith("http://") or url_input.startswith("https://")):
+            st.warning("Please enter a valid URL starting with http:// or https://")
             return
 
-        with st.spinner("Analyzing job posting..."):
+        with st.spinner("🔍 Analyzing job posting (this may take a few seconds)..."):
             try:
                 # Initialize logic
                 llm = Chain(model_name=model_name)
@@ -60,9 +77,14 @@ def main():
 
                 # Load and clean content
                 loader = WebBaseLoader([url_input])
-                loaded_docs = loader.load()
+                try:
+                    loaded_docs = loader.load()
+                except Exception as scrape_err:
+                    st.error(f"Failed to scrape the URL: {str(scrape_err)}. Some websites block automated access.")
+                    return
+
                 if not loaded_docs:
-                    st.error("No content found at the URL.")
+                    st.error("No content found at the URL. It might be protected or require JavaScript.")
                     return
 
                 page_content = loaded_docs[0].page_content
@@ -72,7 +94,7 @@ def main():
                 jobs = llm.extract_jobs(cleaned_text)
 
                 if not jobs:
-                    st.info("No job postings detected on this page.")
+                    st.info("No job postings detected on this page. Try copying the job description text manually if the URL is protected.")
                     return
 
                 # Process each job
@@ -97,7 +119,8 @@ def main():
                     st.markdown("---")
                     
             except Exception as e:
-                st.error(f"Error: {str(e)}")
+                st.error(f"An unexpected error occurred: {str(e)}")
+                st.info("Tip: If the error is related to output parsing, the job description might be too complex or the model might be overloaded.")
 
 if __name__ == "__main__":
     main()

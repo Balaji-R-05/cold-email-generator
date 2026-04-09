@@ -33,8 +33,16 @@ The **Cold Email Generator** is an AI-powered Streamlit app that automates outre
 - **Review & Customize:** Edit the generated email as needed before sending
 - **Copy & Send:** Copy the final email to your email client
 
+## Project Status: 📦 Archived
+This repository is currently in a stable, archived state. It has been finalized with:
+- **Robustness:** Pydantic-validated LLM extraction.
+- **Maintainability:** Smart portfolio re-indexing and comprehensive error handling.
+- **Polish:** Modernized "Premium" UI/UX.
+
+---
+
 ## Environmental Variables
-Create a **.env** file in the app directory with the following variables:
+Create a **.env** file in the root directory (see `.env.example` for reference):
 ```
 GROQ_API_KEY=<YOUR_API_KEY>
 ```
@@ -43,24 +51,23 @@ GROQ_API_KEY=<YOUR_API_KEY>
 Follow these steps to set up and run the project:
 
 1. **Clone this repo**
-    ```
-    https://github.com/Balaji-R-05/cold-email-generator.git
+    ```bash
+    git clone https://github.com/Balaji-R-05/cold-email-generator.git
     cd cold-email-generator
-    cd app          # Program stored in this folder
     ```
 2. **Create a virtual environment (recommended)**
-    ```
+    ```bash
     python -m venv venv
-    venv\Scripts\activate     # On Windows
-    source venv/bin/activate     # On macOS/Linux
+    ./venv/Scripts/activate     # On Windows
+    source venv/bin/activate    # On macOS/Linux
     ```
-3. **To get started, first install the dependencies using:**
-    ```
+3. **Install the dependencies:**
+    ```bash
     pip install -r requirements.txt
     ```
 4. **Run streamlit**
-    ```
-    streamlit run main.py
+    ```bash
+    streamlit run app/main.py
     ```
 5. **Open your browser and navigate to http://localhost:8501**
 

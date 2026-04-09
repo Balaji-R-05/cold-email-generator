@@ -21,8 +21,27 @@ class Portfolio:
             name="portfolio",
         )
 
-    def load_portfolio(self):
-        if not self.collection.count():
+    def load_portfolio(self, force_rebuild=False):
+        csv_mtime = os.path.getmtime(self.file_path)
+        should_rebuild = force_rebuild or not self.collection.count()
+        
+        # If we already have items, check if the CSV is newer than the vectorstore
+        if not should_rebuild and os.path.exists(self.vectorstore_path):
+            sqlite_path = os.path.join(self.vectorstore_path, "chroma.sqlite3")
+            if os.path.exists(sqlite_path):
+                db_mtime = os.path.getmtime(sqlite_path)
+                if csv_mtime > db_mtime:
+                    should_rebuild = True
+
+
+        # Clear existing data if any
+        if should_rebuild:
+            if self.collection.count():
+                ids = self.collection.get()['ids']
+                if ids:
+                    self.collection.delete(ids=ids)
+            
+            # Load from CSV
             for _, row in self.data.iterrows():
                 self.collection.add(
                     documents=[row["Techstack"]],
